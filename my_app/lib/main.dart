@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'login_form_screen.dart';
+import 'package:provider/provider.dart';
+import 'providers/transaction_provider.dart';
+import 'screens/transaction_list_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => TransactionProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -10,9 +17,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const LoginFormScreen(),
+    return const MaterialApp(
+      title: 'Expense Tracker',
+      home: TransactionListScreen(),
     );
   }
 }

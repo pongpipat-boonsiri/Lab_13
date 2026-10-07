@@ -1,6 +1,6 @@
 {
-    "name": "my_app",
-    "short_name": "my_app",
+    "name": "chapter_13",
+    "short_name": "chapter_13",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
