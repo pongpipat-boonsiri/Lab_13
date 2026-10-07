@@ -1,3 +1,4 @@
+// lib/providers/transaction_provider.dart
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -9,33 +10,44 @@ class TransactionProvider with ChangeNotifier {
   Database? _database;
   List<MyTransaction> _transactions = [];
 
-  List<MyTransaction> get transactions => [..._transactions];
-
+  // เพิ่มตรงนี้
   TransactionProvider() {
     fetchAndSetTransactions();
   }
 
+  List<MyTransaction> get transactions => [..._transactions];
+
+  // กระบวนการที่ 2: การสร้างฐานข้อมูล
   Future<void> _initDatabase() async {
     if (_database != null) return;
+
     try {
       final dbPath = await getDatabasesPath();
       final path = join(dbPath, _dbName);
+
       _database = await openDatabase(
         path,
         version: 1,
         onCreate: (db, version) {
           print('Creating table $_tableName...');
           return db.execute(
-            'CREATE TABLE $_tableName(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, amount REAL, date TEXT, type TEXT)',
+            'CREATE TABLE $_tableName('
+            'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+            'title TEXT, '
+            'amount REAL, '
+            'date TEXT, '
+            'type TEXT)',
           );
         },
       );
+
       print('Database initialized at $path');
     } catch (e) {
       print('Error initializing database: $e');
     }
   }
 
+  // กระบวนการที่ 3: Insert
   Future<void> addTransaction(
     String title,
     double amount,
@@ -43,6 +55,7 @@ class TransactionProvider with ChangeNotifier {
     TransactionType type,
   ) async {
     await _initDatabase();
+
     if (_database == null) return;
 
     final newTransaction = MyTransaction(
@@ -53,41 +66,50 @@ class TransactionProvider with ChangeNotifier {
     );
 
     final id = await _database!.insert(_tableName, newTransaction.toMap());
+
     print('Inserted transaction with id: $id');
+
+    // เพิ่มตรงนี้ เพื่อให้ UI อัปเดตหลังเพิ่มข้อมูล
     await fetchAndSetTransactions();
   }
 
+  // กระบวนการที่ 4: Read
   Future<void> fetchAndSetTransactions() async {
     await _initDatabase();
+
     if (_database == null) return;
 
     final dataList = await _database!.query(_tableName, orderBy: 'date DESC');
-    _transactions =
-        dataList.map((item) => MyTransaction.fromMap(item)).toList();
+
+    _transactions = dataList
+        .map((item) => MyTransaction.fromMap(item))
+        .toList();
+
     print('Fetched ${_transactions.length} transactions.');
+
     notifyListeners();
   }
 
+  // ภายในคลาส TransactionProvider
+  // กระบวนการที่ 5: การ Update
   Future<void> updateTransaction(int id, MyTransaction newTransaction) async {
     await _initDatabase();
     if (_database == null) return;
     await _database!.update(
       _tableName,
-      newTransaction.toMap(),
+      newTransaction
+          .toMap(), // toMap() ไม่ส่ง id ที่เป็น null จึงไม่ไปเปลี่ยนคีย์หลัก
       where: 'id = ?',
       whereArgs: [id],
     );
     await fetchAndSetTransactions();
   }
 
+  // กระบวนการที่ 6: การ Delete
   Future<void> deleteTransaction(int id) async {
     await _initDatabase();
     if (_database == null) return;
-    await _database!.delete(
-      _tableName,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await _database!.delete(_tableName, where: 'id = ?', whereArgs: [id]);
     await fetchAndSetTransactions();
   }
 }

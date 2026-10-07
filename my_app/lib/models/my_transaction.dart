@@ -1,3 +1,4 @@
+// lib/models/my_transaction.dart
 enum TransactionType { income, expense }
 
 class MyTransaction {
@@ -17,11 +18,11 @@ class MyTransaction {
 
   Map<String, dynamic> toMap() {
     return {
-      if (id != null) 'id': id,
+      if (id != null) 'id': id, // ห้ามส่ง id ที่เป็น null เข้าไปใน UPDATE
       'title': title,
       'amount': amount,
       'date': date.toIso8601String(),
-      'type': type.name,
+      'type': type.name, // เก็บเป็น 'income' หรือ 'expense'
     };
   }
 
